@@ -1408,11 +1408,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Projects\\Magia\\SBS\\DataService\\DataService\\DataService.csproj",
+      "projectUniqueName": "C:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj",
       "projectName": "DataService",
-      "projectPath": "C:\\Projects\\Magia\\SBS\\DataService\\DataService\\DataService.csproj",
+      "projectPath": "C:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj",
       "packagesPath": "C:\\Users\\ianclough\\.nuget\\packages\\",
-      "outputPath": "C:\\Projects\\Magia\\SBS\\DataService\\DataService\\obj\\",
+      "outputPath": "C:\\Projects\\Magia\\github\\DataService\\DataService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\ianclough\\AppData\\Roaming\\NuGet\\NuGet.Config",
