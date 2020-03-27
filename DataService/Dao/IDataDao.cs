@@ -1,9 +1,16 @@
-﻿﻿﻿namespace Connector.Dao
+﻿﻿﻿using System.Collections.Generic;
+  using DataService.Model;
+
+  namespace Connector.Dao
 {
     public interface IDataDao
     {
-        void Save(string userId, string formName, string jsonData);
+        string Save(string formName, string stage, string userId, string jsonData);
 
-        string Load(string userId, string formName);
+        void Save(string formName, string requestId, string stage, string userId, string jsonData);
+
+        Form Load(string formName, string requestId);
+
+        List<Form> GetByStage(string stage);
     }
 }

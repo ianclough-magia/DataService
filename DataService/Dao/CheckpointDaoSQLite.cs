@@ -39,8 +39,7 @@ using System.Data.Common;
                 }
             }
             
-            Checkpoint checkpoint = new Checkpoint();
-            checkpoint.checkpoint_data = load_checkpoint;
+            Checkpoint checkpoint = new Checkpoint{user_id = userId, form_id = formName, checkpoint_data = load_checkpoint};
             return checkpoint;
         }
 

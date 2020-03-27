@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj": {}
+    "C:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj": {}
   },
   "projects": {
-    "c:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj": {
+    "C:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj",
+        "projectUniqueName": "C:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj",
         "projectName": "DataService",
-        "projectPath": "c:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj",
+        "projectPath": "C:\\Projects\\Magia\\github\\DataService\\DataService\\DataService.csproj",
         "packagesPath": "C:\\Users\\ianclough\\.nuget\\packages\\",
-        "outputPath": "c:\\Projects\\Magia\\github\\DataService\\DataService\\obj\\",
+        "outputPath": "C:\\Projects\\Magia\\github\\DataService\\DataService\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\ianclough\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -65,7 +65,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "c:\\program files\\dotnet\\sdk\\3.1.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.101\\RuntimeIdentifierGraph.json"
         }
       }
     }

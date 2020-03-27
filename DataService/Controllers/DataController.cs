@@ -23,18 +23,17 @@ namespace DataService.Controllers
       * Save the form data at the end of an interview request
       * Request
       *     POST
-      *     /formdata/<form-id>?userid=<user-id>
-      *     {"form_data_json":"<form-data-json>"}
+      *     /formdata/<form-id>
+      *     {"form_id":"<form-id>","stage":"<stage>","user_id":"<user-id>","form_data_json":"<form-data-json>"}
       * Response
       *     200
-      *     {"form_id":<form-id>", "request_id":"<request-id>"}
+      *     {"form_id":<form-id>","request_id":"<request-id>","stage":"<stage>","user_id":"<user-id>"}
       */
         [HttpPost("/formdata/{form_id}")]
-        public Form SaveForm(string form_id, string user_id, Form form)
+        public Form SaveForm(string form_id, Form form)
         { 
-         Console.WriteLine("DataController.SaveForm");
-         _dataDao.Save(user_id,form_id, form.form_data_json);
-         string requestId = "0";
+         Console.WriteLine($"DataController.SaveForm form_id={form_id} form={form}");
+         string requestId = _dataDao.Save(form_id, form.form_stage, form.user_id, form.form_data_json);
          return new Form {form_id = form_id, request_id = requestId};
         }
 
@@ -48,27 +47,28 @@ namespace DataService.Controllers
          *     {"form_id":"<form-id>", "request_id":"<request-id>", "form_status":"<form-status>", "form_data_json":"<form-data-json>"}
          */ 
         [HttpGet("/formdata/{form_id}/{request_id}")]
-        public Form GetForm(string form_id, string request_id, string user_id)
+        public Form GetForm(string form_id, string request_id)
         {
-         Console.WriteLine("DataController.GetForm form_id=" + form_id + " request_id=" + request_id + " user_id=" + user_id);
-         string jsonData = _dataDao.Load(user_id, form_id);
-         return new Form{form_id = form_id, request_id = request_id, form_data_json = jsonData};
+         Console.WriteLine($"DataController.GetForm form_id={form_id} request_id={request_id}");
+         Form form = _dataDao.Load(form_id, request_id);
+         return form;
         }
 
         /* 
          * Save the form data at the end of an interview approval
          * Request
-         *     PUT
-         *     /formdata/<form-id>/<request-id>?userid=<user-id>
-         *     {"form_status":"<form-status>", "form_data_json":"<form-data-json>"}
-         * Response
-         *     200
+      *     POST
+      *     /formdata/<form-id>
+      *     {"form_id":"<form-id>","stage":"<stage>","user_id":"<user-id>","form_data_json":"<form-data-json>"}
+      * Response
+      *     200
+      *     {"form_id":<form-id>","request_id":"<request-id>","stage":"<stage>","user_id":"<user-id>"}
          */ 
         [HttpPost("/formdata/{form_id}/{request_id}")]
-        public HttpResponseMessage SaveForm(string form_id, string request_id, string user_id, Form form)
+        public HttpResponseMessage SaveForm(string form_id, string request_id, Form form)
         {
-         Console.WriteLine("DataController.SaveForm form_id=" + form_id + " request_id=" + request_id + " user_id=" + user_id);
-         _dataDao.Save(user_id, form_id, form.form_data_json);
+         Console.WriteLine($"DataController.SaveForm form_id={form_id} request_id={request_id} form={form}");
+         _dataDao.Save(form_id, request_id, form.form_stage, form.user_id, form.form_data_json);
          return new HttpResponseMessage(HttpStatusCode.OK);
         }
         /* 
@@ -89,16 +89,17 @@ namespace DataService.Controllers
          * Retrieve all form details with the specified status
          * Request
          *     GET
-         *     /formdata?status=<status>
+         *     /formdata?stage=<stage>
          * Response
          *     200
          *     [{"form_id":<form-id>", "request_id":"<request-id>"}]
          */
         [HttpGet("/formdata")]
-        public List<Form> GetForm(string status)
+        public List<Form> GetForm(string stage)
         {
-         Console.WriteLine("DataController.GetForm status=" + status);
-         return new List<Form> {new Form {form_status = status} };
+         Console.WriteLine("DataController.GetForm status=" + stage);
+         List<Form> forms = _dataDao.GetByStage(stage);
+         return forms;
         }
 
         

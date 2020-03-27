@@ -1,97 +1,176 @@
 ﻿﻿﻿using System;
-using System.Data.Common;
+  using System.Collections.Generic;
+  using System.Data.Common;
   using DataService.Dao;
+  using DataService.Model;
   using Microsoft.Data.Sqlite;
 
   namespace Connector.Dao
 {
     public class DataDaoSQLite : IDataDao
     {
-        private string _jsonData;
+        private const string CreateTableSql =
+            @"CREATE TABLE IF NOT EXISTS
+                form(
+                    form_form TEXT,
+                    form_request_id INTEGER,
+                    form_stage TEXT,
+                    form_userid TEXT,
+                    form_json TEXT
+                 )";
 
-        private const string LoadSql = "select form_json from form where form_userid = @Param1 and form_form = @Param2";
+        private const string LoadSql = @"select
+             form_stage,
+             form_userid,
+             form_json
+             from form
+             where form_form = @Param1
+             and form_request_id = @Param2";
 
         private const string ExistsSql = "select count(*) from form where form_userid = @Param1 and form_form = @Param2";
         
-        private const string SaveSql = "insert into form (form_userid, form_form, form_json) values(@Param1, @Param2, @Param3)";
+        private const string SaveSql = @"insert into form (form_form, form_stage, form_userid, form_json)
+            values(@Param1, @Param2, @Param3, @Param4)";
 
-        private const string UpdateSql = "update form set form_json = @Param3 where  form_userid = @Param1 and form_form = @Param2";
+        private const string UpdateSql = @"update form
+            set form_json = @Param4
+            where form_userid = @Param1 
+            and form_form = @Param2
+            and form_request_id = @Param3";
+
+        private const string GetByStageSql = "select form_form, form_request_id, form_stage, form_userid from form where form_stage = @Param1";
 
         public DataDaoSQLite()
         {
         }
 
-        public void Save(string userId, string formName, string jsonData)
+        public string Save(string formName, string stage, string userId, string jsonData)
         {
-            _jsonData = jsonData;
-
+            Console.WriteLine($"DataDaoSqlLite.Save formName={formName} stage={stage} userId={userId} jsonData={jsonData}");
             using (DbConnection connection = DatabaseHelper.GetDatabaseConnectionSqlite())
             {
+                DbCommand createTableCommand = connection.CreateCommand();
+                createTableCommand.CommandText = CreateTableSql;
+                createTableCommand.ExecuteNonQuery();
+
                 DbTransaction transaction = connection.BeginTransaction();
 
-                DbCommand existsCommand = connection.CreateCommand();
-                existsCommand.Transaction = transaction;
-                existsCommand.CommandText = ExistsSql;
-//                existsCommand.Parameters.Add(new SqliteParameter("@Param1", userId));
-//                existsCommand.Parameters.Add(new SqliteParameter("@Param2", formName));
-
-                Int32 count = (Int32) existsCommand.ExecuteScalar();
-
-                if (count == 0)
-                {
                     DbCommand insertCommand = connection.CreateCommand();
                     insertCommand.Transaction = transaction;
                     insertCommand.CommandText = SaveSql;
 
-//                    insertCommand.Parameters.Add(new SqliteParameter("@Param1", userId));
-//                    insertCommand.Parameters.Add(new SqliteParameter("@Param2", formName));
-//                    insertCommand.Parameters.Add(new SqliteParameter("@Param3", jsonData));
+                    insertCommand.Parameters.Add(new SqliteParameter("@Param1", formName));
+                    insertCommand.Parameters.Add(new SqliteParameter("@Param2", stage));
+                    insertCommand.Parameters.Add(new SqliteParameter("@Param3", userId));
+                    insertCommand.Parameters.Add(new SqliteParameter("@Param4", jsonData));
 
                     int inserts = insertCommand.ExecuteNonQuery();
                     Console.WriteLine("Rows inserted: " + inserts);
-                }
-                else
-                {
+                    
+                    DbCommand lastRowIdCommand = connection.CreateCommand();
+                    lastRowIdCommand.CommandText = "select last_insert_rowid()";
+                    // The row ID is a 64-bit value - cast the Command result to an Int64.
+                    //
+                    Int64 LastRowID64 = (Int64)lastRowIdCommand.ExecuteScalar();
+                    // Then grab the bottom 32-bits as the unique ID of the row.
+                    //
+                    int LastRowID = (int)LastRowID64;
+
+                    DbCommand updateRequestIdCommand = connection.CreateCommand();
+                    updateRequestIdCommand.CommandText =
+                        "update form set form_request_id = @Param1 where ROWID = @Param1";
+                    
+                transaction.Commit();
+                return LastRowID.ToString();
+            }
+        }
+
+        public void Save(string formName, string requestId, string stage, string userId, string jsonData)
+        {
+            Console.WriteLine($"DataDaoSqlLite.Save formName={formName} requestId={requestId} stage={stage} userId={userId} jsonData={jsonData}");
+            using (DbConnection connection = DatabaseHelper.GetDatabaseConnectionSqlite())
+            {
+                DbCommand createTableCommand = connection.CreateCommand();
+                createTableCommand.CommandText = CreateTableSql;
+                createTableCommand.ExecuteNonQuery();
+
+                DbTransaction transaction = connection.BeginTransaction();
+
                     DbCommand updateCommand = connection.CreateCommand();
                     updateCommand.Transaction = transaction;
                     updateCommand.CommandText = UpdateSql;
 
-//                    updateCommand.Parameters.Add(new SqliteParameter("@Param1", userId));
-//                    updateCommand.Parameters.Add(new SqliteParameter("@Param2", formName));
-//                    updateCommand.Parameters.Add(new SqliteParameter("@Param3", jsonData));
+                    updateCommand.Parameters.Add(new SqliteParameter("@Param1", userId));
+                    updateCommand.Parameters.Add(new SqliteParameter("@Param2", formName));
+                    updateCommand.Parameters.Add(new SqliteParameter("@Param3", requestId));
+                    updateCommand.Parameters.Add(new SqliteParameter("@Param4", jsonData));
 
                     int updates = updateCommand.ExecuteNonQuery();
                     Console.WriteLine("Rows updated: " + updates);
-                }
 
-                transaction.Commit();
+                    transaction.Commit();
             }
         }
 
-        public string Load(string userId, string formName)
+        public Form Load(string formName, string requestId)
         {
-            string load_json = null;
-            
+            Console.WriteLine($"DataDaoSqlLite.Save formName={formName} requestId={requestId}");
+            Form form = null;
             using (DbConnection connection = DatabaseHelper.GetDatabaseConnectionSqlite())
             {
                 DbCommand createTableCommand = connection.CreateCommand();
-                createTableCommand.CommandText = "CREATE TABLE IF NOT EXISTS form(form_userid TEXT, form_form TEXT, form_json TEXT)";
+                createTableCommand.CommandText = CreateTableSql;
                 createTableCommand.ExecuteNonQuery();
                 
                 DbCommand command = connection.CreateCommand();
                 command.CommandText = LoadSql;
-                command.Parameters.Add(new SqliteParameter("@Param1", userId));
-                command.Parameters.Add(new SqliteParameter("@Param2", formName));
+                command.Parameters.Add(new SqliteParameter("@Param1", formName));
+                command.Parameters.Add(new SqliteParameter("@Param2", requestId));
+                form = new Form();
                 using (DbDataReader reader = command.ExecuteReader())
                 {
                     if (reader.Read())
                     {
-                        load_json = reader.GetString(reader.GetOrdinal("form_json"));
+                        form.form_stage = reader.GetString(reader.GetOrdinal("form_stage"));
+                        form.user_id = reader.GetString(reader.GetOrdinal("form_userid"));
+                        form.form_data_json = reader.GetString(reader.GetOrdinal("form_json"));
+                        form.form_id = formName;
+                        form.request_id = requestId;
                     }
                 }
             }
             
-            return load_json == null ? load_json : _jsonData;
+            return form;
+        }
+
+        public List<Form> GetByStage(string stage)
+        {
+            Console.WriteLine($"DataDaoSqlLite.GetByStage stage={stage}");
+            List<Form> forms = new List<Form>();
+            using (DbConnection connection = DatabaseHelper.GetDatabaseConnectionSqlite())
+            {
+                DbCommand createTableCommand = connection.CreateCommand();
+                createTableCommand.CommandText = CreateTableSql;
+                createTableCommand.ExecuteNonQuery();
+                
+                DbCommand command = connection.CreateCommand();
+                command.CommandText = GetByStageSql;
+                command.Parameters.Add(new SqliteParameter("@Param1", stage));
+                using (DbDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Form form = new Form();
+                        form.form_id = reader.GetString(reader.GetOrdinal("form_form"));
+//                        form.request_id = reader.GetString(reader.GetOrdinal("form_request_id"));
+                        form.form_stage = reader.GetString(reader.GetOrdinal("form_stage"));
+                        form.user_id = reader.GetString(reader.GetOrdinal("form_userid"));
+                        forms.Add(form);
+                    }
+                }
+            }
+
+            return forms;
         }
         
     }

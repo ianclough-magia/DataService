@@ -1,7 +1,9 @@
 ﻿﻿﻿using System;
-using System.Data.SqlClient;
+  using System.Collections.Generic;
+  using System.Data.SqlClient;
  using Connector.Dao;
   using DataService.Dao;
+  using DataService.Model;
 
   namespace OPAService.Dao
 {
@@ -21,7 +23,7 @@ using System.Data.SqlClient;
         {
         }
 
-        public void Save(string userId, string formName, string jsonData)
+        public string Save(string userId, string formName, string jsonData)
         {
             _jsonData = jsonData;
 
@@ -66,9 +68,26 @@ using System.Data.SqlClient;
 
                 transaction.Commit();
             }
+
+            return null;    //TODO
         }
 
-        public string Load(string userId, string formName)
+        public void Save(string userId, string formName, string requestId, string jsonData)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Save(string formName, string requestId, string stage, string userId, string jsonData)
+        {
+            throw new NotImplementedException();
+        }
+
+        string IDataDao.Save(string formName, string stage, string userId, string jsonData)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Form Load(string userId, string formName)
         {
             string load_json = null;
             
@@ -86,9 +105,18 @@ using System.Data.SqlClient;
                     }
                 }
             }
-            
-            return load_json == null ? load_json : _jsonData;
+
+            return null;//load_json == null ? load_json : _jsonData;
         }
-        
+
+        public List<Form> GetByStage(string stage)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Form> GetByStatus(string status)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http;
 using Connector.Dao;
 using DataService.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace DataService.Controllers
 {
@@ -30,6 +33,7 @@ namespace DataService.Controllers
         [HttpPost("/checkpoint/{form_id}")]
         public Checkpoint SetCheckpoint(string form_id, string user_id)
         {
+            Console.WriteLine($"CheckpointController.SetCheckpoint form_id={form_id} user_id={user_id}");
             return new Checkpoint {checkpoint_id = "0"};
         }
         /*
@@ -43,9 +47,11 @@ namespace DataService.Controllers
          *    404
          */
         [HttpGet("/checkpoint/{form_id}")]
-        public Checkpoint GetCheckpoint(string form_id, string user_id)
+        public Checkpoint GetCheckpoint([Required]string form_id, [Required]string user_id)
         {
-            return new Checkpoint{form_id = form_id};
+            Console.WriteLine($"CheckpointController.GetCheckpoint form_id={form_id} user_id={user_id}");
+            Checkpoint checkpoint = _checkpointDao.GetCheckpointData(user_id, form_id);
+            return checkpoint;
         }
         /*
          *Delete a checkpoint for specific user/form 
