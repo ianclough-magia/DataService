@@ -5,10 +5,8 @@
 {
     public interface IDataDao
     {
-        string Save(string formName, string stage, string userId, string jsonData);
-
-        void Save(string formName, string requestId, string stage, string userId, string jsonData);
-
+        Form Save(Form form);
+        
         Form Load(string formName, string requestId);
 
         List<Form> GetByStage(string stage);

@@ -1,4 +1,5 @@
-﻿using DataService.Model;
+﻿using System.Collections.Generic;
+using DataService.Model;
 
 namespace Connector.Dao
 {
@@ -7,5 +8,8 @@ namespace Connector.Dao
         Checkpoint GetCheckpointData(string userId, string formName);
 
         string SetCheckpointData(string userId, string formName, string checkpointData);
+
+        bool DeleteCheckpoint(string userId, string formName);
+        IEnumerable<Checkpoint> ListCheckpoints(string userId);
     }
 }

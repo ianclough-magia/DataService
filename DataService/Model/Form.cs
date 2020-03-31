@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Design;
+﻿using System;
+using System.ComponentModel.Design;
 
 namespace DataService.Model
 {
@@ -10,6 +11,10 @@ namespace DataService.Model
         public string form_stage { get; set; }
         
         public string user_id { get; set; }
+        
+        public DateTime created { get; set; }
+        
+        public DateTime updated { get; set; }
         public string form_data_json { get; set; }
     }
 }

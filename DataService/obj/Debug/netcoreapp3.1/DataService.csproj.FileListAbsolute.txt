@@ -94,3 +94,5 @@ C:\Projects\Magia\github\DataService\DataService\obj\Debug\netcoreapp3.1\DataSer
 C:\Projects\Magia\github\DataService\DataService\obj\Debug\netcoreapp3.1\DataService.csproj.CopyComplete
 C:\Projects\Magia\github\DataService\DataService\obj\Debug\netcoreapp3.1\DataService.dll
 C:\Projects\Magia\github\DataService\DataService\obj\Debug\netcoreapp3.1\DataService.pdb
+C:\Projects\Magia\github\DataService\DataService\obj\Debug\netcoreapp3.1\DataService.csproj.CoreCompileInputs.cache
+C:\Projects\Magia\github\DataService\DataService\obj\Debug\netcoreapp3.1\DataService.genruntimeconfig.cache

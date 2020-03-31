@@ -31,9 +31,10 @@ namespace DataService.Controllers
          *    200
          */
         [HttpPost("/checkpoint/{form_id}")]
-        public Checkpoint SetCheckpoint(string form_id, string user_id)
+        public Checkpoint SetCheckpoint([Required]string form_id, [Required]string user_id, Checkpoint checkpoint)
         {
             Console.WriteLine($"CheckpointController.SetCheckpoint form_id={form_id} user_id={user_id}");
+            _checkpointDao.SetCheckpointData(user_id, form_id, checkpoint.checkpoint_data);
             return new Checkpoint {checkpoint_id = "0"};
         }
         /*
@@ -47,11 +48,15 @@ namespace DataService.Controllers
          *    404
          */
         [HttpGet("/checkpoint/{form_id}")]
-        public Checkpoint GetCheckpoint([Required]string form_id, [Required]string user_id)
+        public IActionResult GetCheckpoint([Required]string form_id, [Required]string user_id)
         {
             Console.WriteLine($"CheckpointController.GetCheckpoint form_id={form_id} user_id={user_id}");
             Checkpoint checkpoint = _checkpointDao.GetCheckpointData(user_id, form_id);
-            return checkpoint;
+            if (checkpoint == null)
+            {
+                return NotFound();
+            }
+            return Ok(checkpoint);
         }
         /*
          *Delete a checkpoint for specific user/form 
@@ -62,10 +67,19 @@ namespace DataService.Controllers
          *    200
          */
         [HttpDelete("/checkpoint/{form_id}")]
-        public Checkpoint DeleteCheckpoint(string form_id, string user_id)
+        public IActionResult DeleteCheckpoint([Required] string form_id, [Required] string user_id)
         {
-            return new Checkpoint{form_id = form_id};
+            bool deleted = _checkpointDao.DeleteCheckpoint(user_id, form_id);
+            if (deleted)
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
+        
         /*
          *List the forms that are in-flight for a specific user
          *Request
@@ -76,9 +90,9 @@ namespace DataService.Controllers
          *    [{"form_id":"<form-id>", "checkpoint_id":"<checkpoint-id>", "user_id":"<user-id>"}]
          */
         [HttpGet]
-        public IEnumerable<Checkpoint> Get(string user_id)
+        public IEnumerable<Checkpoint> Get([Required] string user_id)
         {
-            return new List<Checkpoint>() {new Checkpoint{user_id = user_id}};
+            return _checkpointDao.ListCheckpoints(user_id);
         }
 
     }

@@ -1,5 +1,6 @@
 ﻿﻿using System;
-using System.Data.Common;
+ using System.Collections.Generic;
+ using System.Data.Common;
  using DataService.Dao;
  using DataService.Model;
  using Microsoft.Data.Sqlite;
@@ -16,13 +17,17 @@ using System.Data.Common;
 
         private const string UpdateSql = "update [checkpoint] set checkpoint_data = @Param3 where  checkpoint_userid = @Param1 and checkpoint_form = @Param2";
 
+        private const string DeleteSql = "delete from [checkpoint] where  checkpoint_userid = @Param1 and checkpoint_form = @Param2";
+
+        private const string ListSql = "select checkpoint_form from checkpoint where checkpoint_userid = @Param1";
+        
         public CheckpointDaoSQLite()
         {
         }
         
         public Checkpoint GetCheckpointData(string userId, string formName)
         {
-            string load_checkpoint = null;
+            Checkpoint checkpoint = null;
             
             using (DbConnection connection = DatabaseHelper.GetDatabaseConnectionSqlite())
             {
@@ -34,12 +39,12 @@ using System.Data.Common;
                 {
                     if (reader.Read())
                     {
-                        load_checkpoint = reader.GetString(reader.GetOrdinal("checkpoint_data"));
+                        string load_checkpoint = reader.GetString(reader.GetOrdinal("checkpoint_data"));
+                        checkpoint = new Checkpoint{user_id = userId, form_id = formName, checkpoint_data = load_checkpoint};
                     }
                 }
             }
             
-            Checkpoint checkpoint = new Checkpoint{user_id = userId, form_id = formName, checkpoint_data = load_checkpoint};
             return checkpoint;
         }
 
@@ -92,6 +97,60 @@ using System.Data.Common;
             }
 
             return "1";
+        }
+
+        public bool DeleteCheckpoint(string userId, string formName)
+        {
+            Int64 count;
+                
+            using (DbConnection connection = DatabaseHelper.GetDatabaseConnectionSqlite())
+            {
+                DbTransaction transaction = connection.BeginTransaction();
+
+                DbCommand existsCommand = connection.CreateCommand();
+                existsCommand.Transaction = transaction;
+                existsCommand.CommandText = ExistsSql;
+                existsCommand.Parameters.Add(new SqliteParameter("@Param1", userId));
+                existsCommand.Parameters.Add(new SqliteParameter("@Param2", formName));
+
+                count = (Int64) existsCommand.ExecuteScalar();
+
+                if (count > 0)
+                {
+                    DbCommand deleteCommand = connection.CreateCommand();
+                    deleteCommand.CommandText = DeleteSql;
+                    deleteCommand.Parameters.Add(new SqliteParameter("@Param1", userId));
+                    deleteCommand.Parameters.Add(new SqliteParameter("@Param2", formName));
+
+                    deleteCommand.ExecuteNonQuery();
+                }
+                transaction.Commit();
+            }
+
+            return count > 0;
+        }
+
+        public IEnumerable<Checkpoint> ListCheckpoints(string userId)
+        {
+            List<Checkpoint> checkpoints = new List<Checkpoint>();
+            
+            using (DbConnection connection = DatabaseHelper.GetDatabaseConnectionSqlite())
+            {
+                DbCommand command = connection.CreateCommand();
+                command.CommandText = ListSql;
+                command.Parameters.Add(new SqliteParameter("@Param1", userId));
+                using (DbDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string formName = reader.GetString(reader.GetOrdinal("checkpoint_form"));
+                        Checkpoint checkpoint = new Checkpoint{user_id = userId, form_id = formName};
+                        checkpoints.Add(checkpoint);
+                    }
+                }
+            }
+
+            return checkpoints;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http;
 using Connector.Dao;
@@ -33,8 +34,9 @@ namespace DataService.Controllers
         public Form SaveForm(string form_id, Form form)
         { 
          Console.WriteLine($"DataController.SaveForm form_id={form_id} form={form}");
-         string requestId = _dataDao.Save(form_id, form.form_stage, form.user_id, form.form_data_json);
-         return new Form {form_id = form_id, request_id = requestId};
+         form.form_id = form_id;
+         Form resultForm = _dataDao.Save(form);
+         return new Form {form_id = form_id, request_id = resultForm.request_id};
         }
 
         /* 
@@ -68,7 +70,9 @@ namespace DataService.Controllers
         public HttpResponseMessage SaveForm(string form_id, string request_id, Form form)
         {
          Console.WriteLine($"DataController.SaveForm form_id={form_id} request_id={request_id} form={form}");
-         _dataDao.Save(form_id, request_id, form.form_stage, form.user_id, form.form_data_json);
+         form.form_id = form_id;
+         form.request_id = request_id;
+         _dataDao.Save(form);
          return new HttpResponseMessage(HttpStatusCode.OK);
         }
         /* 
@@ -80,9 +84,9 @@ namespace DataService.Controllers
          *     200
          */ 
         [HttpDelete("/formdata/{form_id}/{request_id}")]
-        public HttpResponseMessage DeleteForm(string form_id, string request_id, string user_id)
+        public HttpResponseMessage DeleteForm([Required] string form_id, [Required] string request_id)
         {
-         Console.WriteLine("DataController.DeleteForm form_id=" + form_id + " request_id=" + request_id + " user_id=" + user_id);
+         Console.WriteLine("DataController.DeleteForm form_id=" + form_id + " request_id=" + request_id);
          return new HttpResponseMessage(HttpStatusCode.OK);
         }
         /* 
